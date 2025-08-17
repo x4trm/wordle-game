@@ -12,7 +12,6 @@
 
     <Keyboard v-if="!isMobile" @key-press="handleKeyPress" :key-status="keyStatus" />
 
-    <!-- ukryte input dla urządzeń mobilnych -->
     <input
       v-if="isMobile"
       ref="mobileInput"
@@ -51,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import { words } from './assets/words';
 import Board from './components/Board.vue';
 import Keyboard from './components/Keyboard.vue';
@@ -101,10 +100,10 @@ const startGame = (): void => {
   showInfoModal.value = false;
   timerRef.value?.resetTimer();
   isTimerRunning.value = true;
-  if (isMobile.value) mobileInput.value?.focus();
+  if (isMobile.value) nextTick(() => mobileInput.value?.focus());
 };
 
-const handleBackspace = (event: KeyboardEvent) => {
+const handleBackspace = () => {
   currentGuess.value = currentGuess.value.slice(0, -1);
 };
 
@@ -148,7 +147,7 @@ const submitGuess = (): void => {
   if (guessWord === solution.value) { isWin.value = true; endGame(); }
   else if (guesses.value.length >= maxTurns) { isWin.value = false; endGame(); }
 
-  if (isMobile.value) mobileInput.value?.focus();
+  if (isMobile.value) nextTick(() => mobileInput.value?.focus());
 };
 
 const endGame = (): void => {
@@ -169,14 +168,20 @@ const handleKeyPress = (key: string) => {
   else if (currentGuess.value.length < solution.value.length && /^[a-ząęłńśźżćóu]$/.test(char)) currentGuess.value += char;
 };
 
+const focusMobileInput = () => {
+  if (isMobile.value) mobileInput.value?.focus();
+};
+
 onMounted(() => {
   isMobile.value = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   startGame();
   window.addEventListener('keyup', handleKeyupEvent);
+  document.querySelector('.wordle-app')?.addEventListener('click', focusMobileInput);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keyup', handleKeyupEvent);
+  document.querySelector('.wordle-app')?.removeEventListener('click', focusMobileInput);
 });
 </script>
 
@@ -201,12 +206,12 @@ body {
   min-height: 100vh;
   padding: 1rem;
   box-sizing: border-box;
-  max-width: 600px; 
-  margin: 0 auto; 
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 h1 {
-  font-size: 2.5rem; 
+  font-size: 2.5rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
   text-transform: uppercase;
@@ -216,16 +221,21 @@ h1 {
   text-align: center;
   user-select: none;
 }
+
 .mobile-input {
   position: absolute;
-  opacity: 0;
+  opacity: 0.01;
   width: 1px;
   height: 1px;
   z-index: -1;
 }
+
 @media (max-width: 600px) {
   h1 {
-    font-size: 10vw; 
+    font-size: 10vw;
+  }
+  .wordle-app {
+    padding: 1rem;
   }
 }
 
