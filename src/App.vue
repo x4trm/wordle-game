@@ -2,13 +2,31 @@
   <div class="wordle-app">
     <h1>Wordle</h1>
     <Timer ref="timerRef" :is-running="isTimerRunning" />
+
     <Board
       :solution-length="solution.length"
       :guesses="guesses"
       :current-guess="currentGuess"
       :max-turns="maxTurns"
     />
-    <Keyboard @key-press="handleKeyPress" :key-status="keyStatus" />
+
+    <Keyboard v-if="!isMobile" @key-press="handleKeyPress" :key-status="keyStatus" />
+
+    <!-- ukryte input dla urządzeń mobilnych -->
+    <input
+      v-if="isMobile"
+      ref="mobileInput"
+      type="text"
+      inputmode="text"
+      autocomplete="off"
+      autocapitalize="none"
+      spellcheck="false"
+      v-model="currentGuess"
+      @keydown.enter.prevent="submitGuess"
+      @keydown.backspace.prevent="handleBackspace"
+      maxlength="8"
+      class="mobile-input"
+    />
 
     <ResultsModal
       :is-open="showEndgameModal"
@@ -49,10 +67,13 @@ const currentGuess = ref<string>('');
 const maxTurns: number = 6;
 const isWin = ref<boolean>(false);
 
-const showEndgameModal = ref<boolean>(false);
+const showEndgameModal = ref<boolean>(false); 
 const showInfoModal = ref<boolean>(false);
 const infoModalTitle = ref<string>('');
 const infoModalMessage = ref<string>('');
+
+const mobileInput = ref<HTMLInputElement | null>(null);
+const isMobile = ref<boolean>(false);
 
 const endgameTitle = computed(() => isWin.value ? 'Gratulacje, wygrałeś!' : 'Niestety, przegrałeś!');
 const endgameMessage = computed(() => isWin.value ? '' : `Poprawne hasło to: ${solution.value}`);
@@ -80,27 +101,24 @@ const startGame = (): void => {
   showInfoModal.value = false;
   timerRef.value?.resetTimer();
   isTimerRunning.value = true;
+  if (isMobile.value) mobileInput.value?.focus();
 };
 
-const handleKeyupEvent = (event: KeyboardEvent): void => handleKeyPress(event.key);
-
-const handleKeyPress = (key: string): void => {
-  if (showEndgameModal.value) return;
-  const char = key.toLowerCase();
-  if (char === 'enter') submitGuess();
-  else if (char === 'backspace') currentGuess.value = currentGuess.value.slice(0, -1);
-  else if (currentGuess.value.length < solution.value.length && /^[a-ząęłńśźżćóu]$/.test(char)) currentGuess.value += char;
+const handleBackspace = (event: KeyboardEvent) => {
+  currentGuess.value = currentGuess.value.slice(0, -1);
 };
 
 const submitGuess = (): void => {
-  if (showInfoModal.value) return;
+  if (showInfoModal.value || !solution.value) return;
+
   if (currentGuess.value.length !== solution.value.length) {
     infoModalTitle.value = 'Za krótkie słowo';
     infoModalMessage.value = `Hasło ma ${solution.value.length} liter.`;
     showInfoModal.value = true;
     return;
   }
-  if (!words.includes(currentGuess.value)) {
+
+  if (!words.includes(currentGuess.value.toLowerCase())) {
     infoModalTitle.value = 'Słowo nieznane';
     infoModalMessage.value = 'Tego słowa nie ma w bazie danych.';
     showInfoModal.value = true;
@@ -129,6 +147,8 @@ const submitGuess = (): void => {
 
   if (guessWord === solution.value) { isWin.value = true; endGame(); }
   else if (guesses.value.length >= maxTurns) { isWin.value = false; endGame(); }
+
+  if (isMobile.value) mobileInput.value?.focus();
 };
 
 const endGame = (): void => {
@@ -136,7 +156,21 @@ const endGame = (): void => {
   showEndgameModal.value = true;
 };
 
+const handleKeyupEvent = (event: KeyboardEvent) => {
+  if (!isMobile.value) handleKeyPress(event.key);
+};
+
+const handleKeyPress = (key: string) => {
+  if (showEndgameModal.value || isMobile.value) return;
+
+  const char = key.toLowerCase();
+  if (char === 'enter') submitGuess();
+  else if (char === 'backspace') currentGuess.value = currentGuess.value.slice(0, -1);
+  else if (currentGuess.value.length < solution.value.length && /^[a-ząęłńśźżćóu]$/.test(char)) currentGuess.value += char;
+};
+
 onMounted(() => {
+  isMobile.value = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   startGame();
   window.addEventListener('keyup', handleKeyupEvent);
 });
@@ -182,7 +216,13 @@ h1 {
   text-align: center;
   user-select: none;
 }
-
+.mobile-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  z-index: -1;
+}
 @media (max-width: 600px) {
   h1 {
     font-size: 10vw; 

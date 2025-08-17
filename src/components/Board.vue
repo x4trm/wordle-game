@@ -54,67 +54,65 @@ defineProps<{
 
 <style scoped>
 .board {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 0.5rem;
-width: 100%;
-max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vw;
+  width: 90vw;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .row {
-display: flex;
-justify-content: center;
-gap: 0.5rem;
-width: 100%;
+  display: flex;
+  gap: 2vw;
+  width: 100%;
+  justify-content: center;
 }
 
 .tile {
-flex: 1 1 0;
-aspect-ratio: 1 / 1;
-max-width: 60px;
-font-size: 1.5rem;
-font-weight: bold;
-display: flex;
-align-items: center;
-justify-content: center;
-border: 2px solid #3a3a3c;
-text-transform: uppercase;
-transition: transform 0.2s, background-color 0.2s;
-user-select: none;
+  flex: 1 1 0;
+  aspect-ratio: 1 / 1;
+  font-size: 6vw;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #d3d6da;
+  text-transform: uppercase;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #000;
 }
 
 .tile.correct {
-background-color: #6aaa64;
-color: white;
-border-color: #6aaa64;
+  background-color: #6aaa64;
+  color: white;
+  border-color: #6aaa64;
 }
 
 .tile.present {
-background-color: #c9b458;
-color: white;
-border-color: #c9b458;
+  background-color: #c9b458;
+  color: white;
+  border-color: #c9b458;
 }
 
 .tile.absent {
-background-color: #787c7e;
-color: white;
-border-color: #787c7e;
-}
-
-.tile.filled {
-border-color: #565758;
+  background-color: #787c7e;
+  color: white;
+  border-color: #787c7e;
 }
 
 .tile.empty {
-background-color: #121213;
-color: #121213;
-border-color: #3a3a3c;
+  background-color: #fff;
+  color: #000;
 }
 
-@media (max-width: 350px) {
-.board {
-max-width: 90vw;
+@media (min-width: 600px) {
+  .tile { font-size: 2rem; }
 }
+
+@media (min-width: 900px) {
+  .tile { font-size: 2.5rem; }
 }
 </style>
