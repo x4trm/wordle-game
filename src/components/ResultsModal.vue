@@ -47,21 +47,63 @@ const formattedTime = computed<string>(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  z-index: 1000;
 }
+
 .modal-content {
-  background: white;
-  padding: 30px;
+  background: #1e1e1e;
+  color: #d7dadc;
+  padding: 1.5rem;
   border-radius: 8px;
   text-align: center;
+  width: 100%;
+  max-width: 400px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-button {
-  margin-top: 15px;
-  padding: 10px 20px;
+
+.modal-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #d7dadc;
+}
+
+.modal-content p {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.modal-content button {
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
   cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: #6aaa64;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.modal-content button:hover {
+  background-color: #5d9e54;
+}
+
+@media (min-width: 600px) {
+  .modal-content {
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 900px) {
+  .modal-content {
+    max-width: 500px;
+  }
 }
 </style>

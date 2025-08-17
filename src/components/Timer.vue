@@ -61,8 +61,12 @@ defineExpose({
 
 <style scoped>
 .timer {
-  font-size: 1.5rem;
+  font-size: 10vw;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 4vw;
+  text-align: center;
 }
+
+@media (min-width: 600px) { .timer { font-size: 1.5rem; margin-bottom: 1.5rem; } }
+@media (min-width: 900px) { .timer { font-size: 2rem; } }
 </style>

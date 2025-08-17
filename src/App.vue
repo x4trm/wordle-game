@@ -9,7 +9,7 @@
       :max-turns="maxTurns"
     />
     <Keyboard @key-press="handleKeyPress" :key-status="keyStatus" />
-    
+
     <ResultsModal
       :is-open="showEndgameModal"
       type="endgame"
@@ -43,14 +43,13 @@ import type { Guess, LetterStatus } from './types/game';
 
 const timerRef = ref<InstanceType<typeof Timer> | null>(null);
 const isTimerRunning = ref<boolean>(false);
-
 const solution = ref<string>('');
 const guesses = ref<Guess[]>([]);
 const currentGuess = ref<string>('');
 const maxTurns: number = 6;
 const isWin = ref<boolean>(false);
 
-const showEndgameModal = ref<boolean>(false); 
+const showEndgameModal = ref<boolean>(false);
 const showInfoModal = ref<boolean>(false);
 const infoModalTitle = ref<string>('');
 const infoModalMessage = ref<string>('');
@@ -62,13 +61,9 @@ const keyStatus = computed<Record<string, LetterStatus>>(() => {
   const status: Record<string, LetterStatus> = {};
   guesses.value.forEach((guess) => {
     guess.word.split('').forEach((char, index) => {
-      if (guess.statuses[index] === 'correct') {
-        status[char] = 'correct';
-      } else if (guess.statuses[index] === 'present' && status[char] !== 'correct') {
-        status[char] = 'present';
-      } else if (guess.statuses[index] === 'absent' && !status[char]) {
-        status[char] = 'absent';
-      }
+      if (guess.statuses[index] === 'correct') status[char] = 'correct';
+      else if (guess.statuses[index] === 'present' && status[char] !== 'correct') status[char] = 'present';
+      else if (guess.statuses[index] === 'absent' && !status[char]) status[char] = 'absent';
     });
   });
   return status;
@@ -87,35 +82,24 @@ const startGame = (): void => {
   isTimerRunning.value = true;
 };
 
-const handleKeyupEvent = (event: KeyboardEvent): void => {
-  const key = event.key;
-  handleKeyPress(key);
-};
+const handleKeyupEvent = (event: KeyboardEvent): void => handleKeyPress(event.key);
 
 const handleKeyPress = (key: string): void => {
   if (showEndgameModal.value) return;
-
   const char = key.toLowerCase();
-  
-  if (char === 'enter') {
-    submitGuess();
-  } else if (char === 'backspace') {
-    currentGuess.value = currentGuess.value.slice(0, -1);
-  } else if (currentGuess.value.length < solution.value.length && /^[a-ząęłńśźżćóu]$/.test(char)) {
-    currentGuess.value += char;
-  }
+  if (char === 'enter') submitGuess();
+  else if (char === 'backspace') currentGuess.value = currentGuess.value.slice(0, -1);
+  else if (currentGuess.value.length < solution.value.length && /^[a-ząęłńśźżćóu]$/.test(char)) currentGuess.value += char;
 };
 
 const submitGuess = (): void => {
   if (showInfoModal.value) return;
-
   if (currentGuess.value.length !== solution.value.length) {
     infoModalTitle.value = 'Za krótkie słowo';
     infoModalMessage.value = `Hasło ma ${solution.value.length} liter.`;
     showInfoModal.value = true;
     return;
   }
-  
   if (!words.includes(currentGuess.value)) {
     infoModalTitle.value = 'Słowo nieznane';
     infoModalMessage.value = 'Tego słowa nie ma w bazie danych.';
@@ -129,39 +113,22 @@ const submitGuess = (): void => {
   const statuses: LetterStatus[] = Array(solution.value.length).fill('');
   const usedSolutionChars = Array(solution.value.length).fill(false);
 
-  for (let i = 0; i < solution.value.length; i++) {
-    if (guessWord[i] === solutionChars[i]) {
-      statuses[i] = 'correct';
-      usedSolutionChars[i] = true;
-    }
-  }
+  for (let i = 0; i < solution.value.length; i++)
+    if (guessWord[i] === solutionChars[i]) { statuses[i] = 'correct'; usedSolutionChars[i] = true; }
 
   for (let i = 0; i < solution.value.length; i++) {
     if (statuses[i] === 'correct') continue;
-
     const char = guessWord[i];
-    const indexInSolution = solutionChars.findIndex((sChar, sIndex) => {
-      return sChar === char && !usedSolutionChars[sIndex];
-    });
-
-    if (indexInSolution !== -1) {
-      statuses[i] = 'present';
-      usedSolutionChars[indexInSolution] = true;
-    } else {
-      statuses[i] = 'absent';
-    }
+    const indexInSolution = solutionChars.findIndex((sChar, sIndex) => sChar === char && !usedSolutionChars[sIndex]);
+    if (indexInSolution !== -1) { statuses[i] = 'present'; usedSolutionChars[indexInSolution] = true; }
+    else statuses[i] = 'absent';
   }
 
   guesses.value.push({ word: guessWord, statuses });
   currentGuess.value = '';
 
-  if (guessWord === solution.value) {
-    isWin.value = true;
-    endGame();
-  } else if (guesses.value.length >= maxTurns) {
-    isWin.value = false;
-    endGame();
-  }
+  if (guessWord === solution.value) { isWin.value = true; endGame(); }
+  else if (guesses.value.length >= maxTurns) { isWin.value = false; endGame(); }
 };
 
 const endGame = (): void => {
@@ -180,27 +147,57 @@ onUnmounted(() => {
 </script>
 
 <style>
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #121213;
+  color: #d7dadc;
+}
+
 .wordle-app {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
-  padding: 20px;
-  background-color: #121213;
-  color: #d7dadc;
-  font-family: 'Arial', sans-serif;
+  padding: 1rem;
   box-sizing: border-box;
+  max-width: 600px; 
+  margin: 0 auto; 
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 2.5rem; 
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
-  border-bottom: 1px solid #3a3a3c;
-  padding-bottom: 10px;
+  border-bottom: 2px solid #3a3a3c;
+  padding-bottom: 1rem;
   width: 100%;
   text-align: center;
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 10vw; 
+  }
+}
+
+@media (min-width: 601px) {
+  .wordle-app {
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 900px) {
+  h1 {
+    font-size: 3rem;
+  }
 }
 </style>
